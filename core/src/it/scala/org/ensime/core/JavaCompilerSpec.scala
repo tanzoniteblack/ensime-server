@@ -185,6 +185,7 @@ class JavaCompilerSpec extends FlatSpec with Matchers
       "  public static final int MAX_VALUE = 10;",
       "  public static class TestInner {",
       "    public int maxValue = 10;",
+      "    private int myPrivateInt = 15;",
       "    private void main(String foo, String bar) {",
       "      File f = new File(\".\");",
       "      f.toSt@0@;",
@@ -199,7 +200,9 @@ class JavaCompilerSpec extends FlatSpec with Matchers
       "      System.out.println(new Inte@12@);",
       "      int testinner = 5;",
       "      System.out.println(f.toStr@1@);",
-      "      System.out.@14@",
+      "      System.out.@14@;",
+      "      File.sl@15@;",
+      "      myPrivateI@16@;",
       "    }",
       "  }",
       "}") { (sf, offset, label, cc) =>
@@ -226,6 +229,9 @@ class JavaCompilerSpec extends FlatSpec with Matchers
             assert(info.completions(1).name == "testinner")
 
           case "14" => assert(info.completions.exists(_.name == "println"))
+          case "15" => assert(!info.completions.exists(_.name == "slashify"), "Slashify is a private method, it shouldn't be available for autocomplete outside it's own file.")
+          case "16" => assert(info.completions.exists(_.name == "myPrivateInt"), "Private inside it's own file should autocomplete.")
+          // TODO: Create test for protected items
         }
       }
   }
